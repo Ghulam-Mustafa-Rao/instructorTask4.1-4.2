@@ -18,16 +18,21 @@ public class GameManager : MonoBehaviour
     public GameObject leaderBoard;
 
     public GameObject leaderBoardplayerpanel;
-    
+
+    List<GameObject> laeaderBoardpanelsList;
+
     private void Awake()
     {
         if (gameManager == null)
             gameManager = this;
+
+        allPlayersInStart = allPlayers;
+        laeaderBoardpanelsList = new List<GameObject>();
     }
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
@@ -35,27 +40,65 @@ public class GameManager : MonoBehaviour
     {
 
 
-        if(allPlayers.Count <=1)
+        if (allPlayers.Count <= 1)
         {
             gameOver = true;
-            Time.timeScale = 0;
-        } 
+            //Time.timeScale = 0;
+        }
     }
 
     private void FixedUpdate()
     {
+        List<lederBoardDetails> n = new List<lederBoardDetails>();
 
 
-        if(leaderBoard.transform.childCount > 0)
+        foreach (var item in allPlayersInStart)
         {
-            Transform[] allChildren = leaderBoard.GetComponentsInChildren<Transform>();
-            foreach (Transform child in allChildren)
+            lederBoardDetails lbd = new lederBoardDetails();
+            if (item.gameObject.TryGetComponent<Player>(out Player pla))
             {
-               Destroy(child.gameObject);
+                lbd.name = pla.name;
+                lbd.score = pla.score;
             }
+            else
+            { 
+                lbd.name = item.gameObject.GetComponent<Enemy_Agent>().name;
+                lbd.score = item.gameObject.GetComponent<Enemy_Agent>().score;
+            }
+
+            n.Add(lbd);
         }
 
+        n.Sort(delegate (lederBoardDetails x, lederBoardDetails y)
+        {
+            return y.score.CompareTo(x.score);
+        });
+        //Debug.LogError("child" + leaderBoard.transform.childCount);
+        if(laeaderBoardpanelsList.Count > 0)
+        {
+            foreach (var item in laeaderBoardpanelsList)
+            {
+                Destroy(item);
+            }
+           
+        }
+        int i = 1;
+        laeaderBoardpanelsList = new List<GameObject>();
+        foreach (var item in n)
+        {
+            GameObject ob = Instantiate(leaderBoardplayerpanel, leaderBoard.transform.position, Quaternion.identity);
+            ob.transform.SetParent(leaderBoard.transform);
+            ob.GetComponent<leaderBoardplayerpanel>().position.text = i.ToString();
+            ob.GetComponent<leaderBoardplayerpanel>().name.text = item.name;
+            ob.GetComponent<leaderBoardplayerpanel>().kills.text = item.score.ToString();
+            laeaderBoardpanelsList.Add(ob);
+        }
 
-        
+    }
+
+    class lederBoardDetails
+    {
+        public string name;
+        public int score;
     }
 }
