@@ -36,7 +36,7 @@ public class CameraController : MonoBehaviour
 
     private void LateUpdate()
     {
-        Debug.LogError(max);
+        //Debug.LogError(max);
 
         if (player != null)
             transform.position = new Vector3(player.transform.position.x, yoffset + max, player.transform.position.z);
