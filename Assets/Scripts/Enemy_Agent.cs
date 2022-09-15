@@ -20,6 +20,9 @@ public class Enemy_Agent : MonoBehaviour
 
 
     public float strenght;
+    public string name;
+
+    GameObject collidersParent;
     private void Awake()
     {
         //agent = GetComponent<NavMeshAgent>();
@@ -40,7 +43,7 @@ public class Enemy_Agent : MonoBehaviour
         {
             lookDirection = (destinationObject.transform.position - transform.position).normalized;
             transform.LookAt(destinationObject.transform);
-            rigidbody.AddForce(lookDirection * GameManager.gameManager.speed * (rigidbody.mass * 1.5f));
+            rigidbody.AddForce(lookDirection * GameManager.gameManager.speed * (rigidbody.mass * 1.2f));
         }
         //agent.SetDestination(destinationObject.transform.position);
         else
@@ -48,6 +51,36 @@ public class Enemy_Agent : MonoBehaviour
             lookDirection = Vector3.zero;
             rigidbody.AddForce(lookDirection * GameManager.gameManager.speed * rigidbody.mass);
             setDestination();
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("frontAngle"))
+        {
+            collidersParent = other.gameObject.transform.parent.gameObject;
+            lastHitBy = collidersParent;
+            Vector3 awayFromPlayer = (transform.position - collidersParent.transform.position);
+            float forceApplied = 0;
+            if (collidersParent.TryGetComponent<Player>(out Player pla))
+            {
+                strenght = GameManager.gameManager.force * pla.plRigidbody.mass;
+
+            }
+            else
+            {
+                strenght = GameManager.gameManager.force * collidersParent.GetComponent<Enemy_Agent>().rigidbody.mass;
+            }
+
+            gameObject.GetComponent<Rigidbody>().AddForce(awayFromPlayer * strenght, ForceMode.Impulse);
+            //StartCoroutine(setLastHitBy());
+            // agent.enabled = !agent.enabled;
+
+            //StartCoroutine(ActivateNavMeshAgentCo());
+            //.AddForce(collision.gameObject.transform.right * 
+            // (collision.gameObject.GetComponent<Rigidbody>().mass) * GameManager.gameManager.force
+            // , ForceMode.Impulse);
+
         }
     }
 
@@ -86,36 +119,11 @@ public class Enemy_Agent : MonoBehaviour
             Destroy(this.gameObject);
         }
 
-        if (collision.gameObject.CompareTag("mainCollider"))
-        {
-            lastHitBy = collision.gameObject;
-            Vector3 awayFromPlayer = (transform.position - collision.gameObject.transform.position);
-            float forceApplied = 0;
-            if (collision.gameObject.TryGetComponent<Player>(out Player pla))
-            {
-                strenght = GameManager.gameManager.force * pla.plRigidbody.mass;
-
-
-            }
-            else
-            {
-
-                strenght = GameManager.gameManager.force * collision.gameObject.GetComponent<Enemy_Agent>().rigidbody.mass;
-
-            }
-
-            gameObject.GetComponent<Rigidbody>().AddForce(awayFromPlayer * strenght, ForceMode.Impulse);
-            //StartCoroutine(setLastHitBy());
-            // agent.enabled = !agent.enabled;
-
-            //StartCoroutine(ActivateNavMeshAgentCo());
-            //.AddForce(collision.gameObject.transform.right * 
-            // (collision.gameObject.GetComponent<Rigidbody>().mass) * GameManager.gameManager.force
-            // , ForceMode.Impulse);
-
-        }
+       
 
     }
+
+   
 
     IEnumerator setLastHitBy()
     {
